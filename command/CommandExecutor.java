@@ -11,6 +11,7 @@ public class CommandExecutor {
     private static volatile CommandExecutor mInstance;
 
     static {
+        allKnownCommandsMap.put(Operation.LOGIN,new LoginCommand());
         allKnownCommandsMap.put(Operation.DEPOSIT,new DepositCommand());
         allKnownCommandsMap.put(Operation.INFO,new InfoCommand());
         allKnownCommandsMap.put(Operation.WITHDRAW,new WithdrawCommand());

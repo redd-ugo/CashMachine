@@ -40,11 +40,12 @@ public class CurrencyManipulator {
     }
 
     public Map<Integer, Integer> withdrawAmount(int expectedAmount) throws NotEnoughMoneyException {
+        Map<Integer, Integer> temp = new HashMap<>();
+        temp.putAll(denominations);
         Map<Integer, Integer> result = new HashMap<>();
         List<Integer[]> banknotes;
         int sum = expectedAmount;
-        Map<Integer, Integer> temp = new HashMap<>();
-        temp.putAll(denominations);
+
 
 
         //if request is smaller than any available banknote f.e. 3, 17 etc.
@@ -59,6 +60,7 @@ public class CurrencyManipulator {
         for (int key : temp.keySet()) {
             notesValue[count++] = key;
         }
+        Arrays.sort(notesValue);
         for (int i = 0; i < notesValue.length; i++) {
             notesAmmount[i] = temp.get(notesValue[i]);
         }
@@ -67,6 +69,8 @@ public class CurrencyManipulator {
         banknotes = findAllPossibilities(notesValue, notesAmmount, new int[notesAmmount.length], sum, 0);
         int minAmount = Integer.MAX_VALUE;
         int index = -1;
+        if (banknotes.size() == 0) throw new NotEnoughMoneyException();
+
 
         for (int i = 0, banknotesSize = banknotes.size(); i < banknotesSize; i++) {
             Integer[] array = banknotes.get(i);
@@ -80,16 +84,20 @@ public class CurrencyManipulator {
             }
         }
 
-        for (int i = 0; i < notesValue.length; i++) {
-            Integer num = banknotes.get(index)[i];
-            if (num > 0) {
-                int key = notesValue[i];
-                result.put(key, num);
-                if (temp.get(key) > num) temp.put(key, temp.get(key) - num);
-                else if (temp.get(key).equals(num)) temp.remove(key);
-                else throw new NotEnoughMoneyException();
+        //try {
+            for (int i = 0; i < notesValue.length; i++) {
+                Integer num = banknotes.get(index)[i];
+                if (num > 0) {
+                    int key = notesValue[i];
+                    result.put(key, num);
+                    if (temp.get(key) > num) temp.put(key, temp.get(key) - num);
+                    else if (temp.get(key).equals(num)) temp.remove(key);
+                    else throw new NotEnoughMoneyException();
+                }
             }
-        }
+        /*} catch (ArrayIndexOutOfBoundsException e) {
+            throw new NotEnoughMoneyException();
+        }*/
 
         denominations = new HashMap<>(temp);
         //denominations.putAll(temp);
@@ -97,9 +105,10 @@ public class CurrencyManipulator {
         return result;
     }
 
-    private static List<Integer[]> findAllPossibilities(int[] values, int[] ammounts, int[] variation, int price, int position) throws NotEnoughMoneyException {
+    private List<Integer[]> findAllPossibilities(int[] values, int[] ammounts, int[] variation, int price, int position) throws NotEnoughMoneyException {
         List<Integer[]> list = new ArrayList<>();
         int minValue = Arrays.stream(values).min().getAsInt();
+
         if (price < minValue) throw new NotEnoughMoneyException();
         int value = compute(values, variation);
         if (value < price) {
@@ -120,7 +129,7 @@ public class CurrencyManipulator {
         return list;
     }
 
-    private static int compute(int[] values, int[] variation) {
+    private int compute(int[] values, int[] variation) {
         int ret = 0;
         for (int i = 0; i < variation.length; i++) {
             ret += values[i] * variation[i];
@@ -128,7 +137,7 @@ public class CurrencyManipulator {
         return ret;
     }
 
-    private static Integer[] myCopy(int[] ar) {
+    private Integer[] myCopy(int[] ar) {
         Integer[] ret = new Integer[ar.length];
         for (int i = 0; i < ar.length; i++) {
             ret[i] = ar[i];
